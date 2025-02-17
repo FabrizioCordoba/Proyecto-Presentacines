@@ -10,7 +10,6 @@ auth_bp = Blueprint("auth", __name__)
 # Diccionario para almacenar intentos fallidos por usuario
 intentos_fallidos = {}
 
-# ----------------- LOGIN UNIFICADO -----------------
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -45,9 +44,6 @@ def login():
 
     return render_template("login_unificado.html")
 
-
-
-# ----------------- CIERRE DE SESIÓN -----------------
 @auth_bp.route("/logout")
 @login_required
 def logout():
