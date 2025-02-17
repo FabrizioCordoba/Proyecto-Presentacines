@@ -41,11 +41,3 @@ class FormularioBase(db.Model):
     def validar_completitud(self):
         datos = json.loads(self.datos)
         return all(datos.values())  # Verifica que todos los campos estén llenos
-
-
-
-class RespuestaCampoDinamico(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    formulario_id = db.Column(db.Integer, db.ForeignKey('formulario_base.id'), nullable=False)
-    campo_id = db.Column(db.Integer, db.ForeignKey('campo_formulario.id'), nullable=False)
-    valor = db.Column(db.Text, nullable=False)  # Respuesta del postulante
