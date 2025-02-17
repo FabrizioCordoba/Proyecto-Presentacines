@@ -1,11 +1,11 @@
-# rutas_postulante.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_login import login_required, current_user
 from extensions import db
-from models import Concurso, FormularioBase, CampoFormulario, RespuestaCampoDinamico
+from models import Concurso, FormularioBase, CampoFormulario
 import json
 import pdfkit
 import os
+import bleach
 
 postulante_bp = Blueprint('postulante', __name__)
 
@@ -28,7 +28,6 @@ def panel_postulante():
         postulaciones_finalizadas=postulaciones_finalizadas,
         concursos_abiertos=concursos_abiertos
     )
-
 
 # ----------------- LISTAR CONCURSOS ACTIVOS -----------------
 @postulante_bp.route("/concursos_activos", methods=["GET"])
@@ -66,12 +65,12 @@ def completar_formulario(concurso_id):
         datos_formulario = json.dumps(request.form.to_dict())
 
         if formulario:
-            formulario.datos_generales = datos_formulario
+            formulario.datos = datos_formulario
         else:
             formulario = FormularioBase(
                 postulante_id=current_user.id,
                 concurso_id=concurso_id,
-                datos_generales=datos_formulario,
+                datos=datos_formulario,
                 estado="borrador"
             )
             db.session.add(formulario)
@@ -81,8 +80,6 @@ def completar_formulario(concurso_id):
         return redirect(url_for("postulante.panel_postulante"))
 
     return render_template("formulario_dinamico.html", concurso=concurso, campos=campos)
-
-
 
 # ----------------- FINALIZAR FORMULARIO -----------------
 @postulante_bp.route("/finalizar_formulario/<int:concurso_id>", methods=["POST"])
@@ -94,10 +91,16 @@ def finalizar_formulario(concurso_id):
         flash("No hay un formulario guardado para este concurso.", "danger")
         return redirect(url_for("postulante.completar_formulario", concurso_id=concurso_id))
     
+    # 🚀 Agregamos validación antes de enviar
+    datos_formulario = json.loads(formulario.datos)
+    if not all(datos_formulario.values()):
+        flash("Debe completar todos los campos antes de enviar.", "danger")
+        return redirect(url_for("postulante.completar_formulario", concurso_id=concurso_id))
+
     formulario.estado = "finalizado"
     db.session.commit()
     flash("Formulario enviado correctamente.", "success")
-    return redirect(url_for("postulaciones_enviadas"))
+    return redirect(url_for("postulante.postulaciones_enviadas"))
 
 # ----------------- LISTAR FORMULARIOS ENVIADOS -----------------
 @postulante_bp.route("/postulaciones_enviadas", methods=["GET"])
@@ -111,8 +114,11 @@ def postulaciones_enviadas():
 @login_required
 def generar_pdf(formulario_id):
     formulario = FormularioBase.query.get_or_404(formulario_id)
-    datos_generales = json.loads(formulario.datos_generales)
+    datos_generales = json.loads(formulario.datos)
     
+    # 🚀 Protección contra inyección de código malicioso en PDF
+    datos_generales = {k: bleach.clean(v) for k, v in datos_generales.items()}
+
     html = render_template("postulacion_pdf.html", datos_generales=datos_generales)
     pdf_path = f"postulacion_{formulario_id}.pdf"
     pdfkit.from_string(html, pdf_path)
@@ -120,3 +126,4 @@ def generar_pdf(formulario_id):
     response = send_file(pdf_path, as_attachment=True)
     os.remove(pdf_path)
     return response
+
