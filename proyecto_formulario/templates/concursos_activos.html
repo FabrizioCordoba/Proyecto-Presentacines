@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Concursos Activos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Concursos Activos</h2>
+    <div class="row">
+        {% for concurso in concursos %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3>{{ concurso.nombre }}</h3>
+                    <p><strong>Fecha Inicio:</strong> {{ concurso.fecha_inicio }}</p>
+                    <p><strong>Fecha Fin:</strong> {{ concurso.fecha_fin }}</p>
+                    <form action="{{ url_for('postulante.completar_formulario', concurso_id=concurso.id) }}" method="GET">
+                        <button type="submit" class="btn btn-primary w-100">Seleccionar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <p class="text-center">No hay concursos activos en este momento.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

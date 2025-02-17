@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Formulario PDF{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title text-center">Formulario de Postulación</h1>
+                    <div class="card-text">
+                        <p><strong>Apellidos:</strong> {{ apellidos }}</p>
+                        <p><strong>Nombres:</strong> {{ nombres }}</p>
+                        <p><strong>DNI:</strong> {{ dni }}</p>
+                        <p><strong>Correo Electrónico:</strong> {{ email }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

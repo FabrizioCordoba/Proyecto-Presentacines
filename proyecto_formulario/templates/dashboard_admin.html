@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Administración{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Dashboard del Administrador</h2>
+    <div class="row mt-4">
+        {% for concurso in concursos %}
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title">{{ concurso.nombre }}</h4>
+                    <p><strong>Total de Postulaciones:</strong> {{ concurso.total }}</p>
+                    <p><strong>Finalizadas:</strong> {{ concurso.finalizadas }}</p>
+                    <p><strong>En Borrador:</strong> {{ concurso.borrador }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

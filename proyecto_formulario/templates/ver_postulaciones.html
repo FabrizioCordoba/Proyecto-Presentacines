@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Postulaciones - {{ concurso.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Postulaciones - {{ concurso.nombre }}</h2>
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in postulaciones %}
+                <tr>
+                    <td>{{ post.postulante.nombres }}</td>
+                    <td>{{ post.postulante.apellidos }}</td>
+                    <td>{{ post.estado }}</td>
+                    <td>
+                        <a href="{{ url_for('postulante.generar_pdf', formulario_id=post.id) }}" class="btn btn-primary btn-sm">Ver PDF</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">No hay postulaciones registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

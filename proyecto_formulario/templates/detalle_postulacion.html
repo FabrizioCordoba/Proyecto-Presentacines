@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de Postulación{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Detalle de la Postulación</h2>
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <h4>Datos del Postulante</h4>
+            <p><strong>Nombre:</strong> {{ postulacion.postulante.nombres }} {{ postulacion.postulante.apellidos }}</p>
+            <p><strong>DNI:</strong> {{ postulacion.postulante.dni }}</p>
+            <p><strong>Correo:</strong> {{ postulacion.postulante.username }}</p>
+            
+            <h4 class="mt-4">Datos del Formulario</h4>
+            {% for campo, valor in datos.items() %}
+                <p><strong>{{ campo }}:</strong> {{ valor }}</p>
+            {% endfor %}
+
+            <a href="{{ url_for('postulante.generar_pdf', formulario_id=postulacion.id) }}" class="btn btn-primary mt-3">Generar PDF</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

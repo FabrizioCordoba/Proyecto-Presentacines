@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - CIC Concursos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Bienvenido al Sistema de Concursos de la CIC</h1>
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Postulante</h5>
+                    <p class="card-text">Inicia sesión o regístrate como postulante.</p>
+                    <a href="{{ url_for('auth.login_postulante') }}" class="btn btn-primary">Iniciar Sesión</a>
+                    <a href="{{ url_for('auth.register_postulante') }}" class="btn btn-secondary">Registrarse</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mx-auto">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Administrador</h5>
+                    <p class="card-text">Inicia sesión como administrador.</p>
+                    <a href="{{ url_for('auth.login_admin') }}" class="btn btn-primary">Iniciar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

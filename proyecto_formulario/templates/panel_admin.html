@@ -1,0 +1,42 @@
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required, current_user
+from extensions import db
+from models import Concurso, FormularioBase
+from decoradores import rol_requerido  # ✅ Decorador para evitar repeticiones
+
+admin_bp = Blueprint("admin", __name__)
+
+# ----------------- PANEL DE ADMINISTRACIÓN -----------------
+@admin_bp.route("/panel")
+@login_required
+@rol_requerido("administrador")
+def panel_admin():
+    concursos = Concurso.query.all()
+    formularios = FormularioBase.query.all()
+    return render_template("panel_admin.html", concursos=concursos, formularios=formularios)
+
+# ----------------- VINCULAR FORMULARIO A CONCURSO -----------------
+@admin_bp.route("/vincular_formulario", methods=["POST"])
+@login_required
+@rol_requerido("administrador")
+def vincular_formulario():
+    concurso_id = request.form.get("concurso_id")
+    formulario_id = request.form.get("formulario_id")
+
+    if not concurso_id or not formulario_id:
+        flash("Debe seleccionar un concurso y un formulario.", "danger")
+        return redirect(url_for("admin.panel_admin"))
+
+    concurso = Concurso.query.get(concurso_id)
+    formulario = FormularioBase.query.get(formulario_id)
+
+    if not concurso or not formulario:
+        flash("El concurso o el formulario seleccionado no existen.", "danger")
+        return redirect(url_for("admin.panel_admin"))
+
+    # Asignar el formulario al concurso
+    concurso.formulario_id = formulario.id
+    db.session.commit()
+
+    flash("Formulario vinculado correctamente al concurso.", "success")
+    return redirect(url_for("admin.panel_admin"))

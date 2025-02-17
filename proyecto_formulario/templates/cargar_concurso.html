@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Concursos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Gestión de Concursos</h2>
+
+    <!-- Formulario para crear un nuevo concurso -->
+    <form method="POST" action="{{ url_for('admin.cargar_concurso') }}" class="mt-4">
+        <div class="form-group">
+            <label>Nombre del Concurso:</label>
+            <input type="text" name="nombre" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Tipo de Concurso:</label>
+            <select name="tipo" class="form-control" required>
+                {% for key, value in tipos_concursos.items() %}
+                    <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Fecha de Inicio:</label>
+            <input type="date" name="fecha_inicio" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label>Fecha de Fin:</label>
+            <input type="date" name="fecha_fin" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success w-100 mt-3">Crear Concurso</button>
+    </form>
+
+    <!-- Tabla con los concursos existentes -->
+    <h3 class="mt-5">Concursos Existentes</h3>
+    <table class="table table-bordered mt-3">
+        <thead class="thead-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Fecha de Inicio</th>
+                <th>Fecha de Fin</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for concurso in concursos %}
+            <tr>
+                <td>{{ concurso.nombre }}</td>
+                <td>{{ tipos_concursos.get(concurso.tipo, concurso.tipo) }}</td>  <!-- Muestra el nombre completo -->
+                <td>{{ concurso.fecha_inicio }}</td>
+                <td>{{ concurso.fecha_fin }}</td>
+                <td>{{ concurso.estado }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">No hay concursos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

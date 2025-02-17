@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Formularios{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Gestión de Formularios</h2>
+
+    <form method="POST" action="{{ url_for('formulario.seleccionar_concurso') }}">
+        <div class="mb-3">
+            <label for="concurso_id" class="form-label">Seleccionar Concurso:</label>
+            <select name="concurso_id" class="form-control">
+                {% for concurso in concursos %}
+                    <option value="{{ concurso.id }}">{{ concurso.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Seleccionar</button>
+    </form>
+
+    {% if formulario %}
+        <h3 class="mt-4">Formulario: {{ formulario.nombre }}</h3>
+        
+        <h4>Campos del Formulario</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Obligatorio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for campo in campos %}
+                    <tr>
+                        <td>{{ campo.nombre }}</td>
+                        <td>{{ campo.tipo }}</td>
+                        <td>{{ "Sí" if campo.obligatorio else "No" }}</td>
+                        <td>
+                            <a href="{{ url_for('formulario.eliminar_campo', campo_id=campo.id) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h4>Agregar Nuevo Campo</h4>
+        <form method="POST" action="{{ url_for('formulario.agregar_campo', formulario_id=formulario.id) }}">
+            <div class="mb-3">
+                <label for="nombre_campo" class="form-label">Nombre del Campo:</label>
+                <input type="text" name="nombre_campo" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="tipo_campo" class="form-label">Tipo de Campo:</label>
+                <select name="tipo_campo" class="form-control">
+                    <option value="text">Texto</option>
+                    <option value="number">Número</option>
+                    <option value="date">Fecha</option>
+                    <option value="select">Lista Desplegable</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Agregar Campo</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

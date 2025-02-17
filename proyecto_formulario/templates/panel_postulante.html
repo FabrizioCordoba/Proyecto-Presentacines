@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Panel del Postulante{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Panel del Postulante</h2>
+    <p class="text-center"><strong>Bienvenido/a, {{ current_user.nombres }} {{ current_user.apellidos }}</strong></p>
+
+    <div class="row">
+        <!-- Postulaciones en Borrador -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Postulaciones en Borrador</h5>
+                    {% if postulaciones_borrador %}
+                        <ul class="list-group">
+                            {% for post in postulaciones_borrador %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Concurso: {{ post.concurso.nombre }}</span>
+                                    <a href="{{ url_for('postulante.completar_formulario', concurso_id=post.concurso_id) }}" class="btn btn-warning btn-sm">Continuar</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No tienes postulaciones en borrador.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Postulaciones Finalizadas -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Postulaciones Finalizadas</h5>
+                    {% if postulaciones_finalizadas %}
+                        <ul class="list-group">
+                            {% for post in postulaciones_finalizadas %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Concurso: {{ post.concurso.nombre }}</span>
+                                    <a href="{{ url_for('postulante.generar_pdf', formulario_id=post.id) }}" class="btn btn-primary btn-sm">Descargar PDF</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">No tienes postulaciones finalizadas.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Concursos Activos -->
+    <div class="mt-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Concursos Activos</h5>
+                {% if concursos_abiertos %}
+                    <ul class="list-group">
+                        {% for concurso in concursos_abiertos %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ concurso.nombre }}</span>
+                                <a href="{{ url_for('postulante.completar_formulario', concurso_id=concurso.id) }}" class="btn btn-success btn-sm">Postularse</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No hay concursos activos en este momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

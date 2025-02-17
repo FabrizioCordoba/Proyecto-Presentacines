@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Formulario I - Datos Generales{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center">Formulario I - Datos Generales</h2>
+                    <h3 class="text-center">Concurso: {{ concurso.nombre }}</h3>
+                    <form method="POST" class="mt-3">
+                        <!-- Datos Personales -->
+                        <h4 class="mt-4">Datos Personales</h4>
+                        <div class="mb-3">
+                            <label for="apellidos" class="form-label">Apellidos:</label>
+                            <input type="text" class="form-control" id="apellidos" name="apellidos" value="{{ current_user.apellidos }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nombres" class="form-label">Nombres:</label>
+                            <input type="text" class="form-control" id="nombres" name="nombres" value="{{ current_user.nombres }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="genero" class="form-label">Género (en el que se autopercibe):</label>
+                            <input type="text" class="form-control" id="genero" name="genero" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dni" class="form-label">Documento: DNI Nº:</label>
+                            <input type="text" class="form-control" id="dni" name="dni" value="{{ current_user.dni }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lugar_nacimiento" class="form-label">Lugar de Nacimiento:</label>
+                            <input type="text" class="form-control" id="lugar_nacimiento" name="lugar_nacimiento" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pais_nacimiento" class="form-label">País:</label>
+                            <input type="text" class="form-control" id="pais_nacimiento" name="pais_nacimiento" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento:</label>
+                            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección Particular:</label>
+                            <input type="text" class="form-control" id="direccion" name="direccion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono:</label>
+                            <input type="text" class="form-control" id="telefono" name="telefono" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="celular" class="form-label">Celular:</label>
+                            <input type="text" class="form-control" id="celular" name="celular" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo Electrónico:</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ current_user.username }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cuil" class="form-label">Nº de CUIL/CUIT:</label>
+                            <input type="text" class="form-control" id="cuil" name="cuil" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="titulo_universitario" class="form-label">Título Universitario:</label>
+                            <input type="text" class="form-control" id="titulo_universitario" name="titulo_universitario" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="universidad_graduacion" class="form-label">Universidad de Graduación:</label>
+                            <input type="text" class="form-control" id="universidad_graduacion" name="universidad_graduacion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fecha_graduacion" class="form-label">Fecha de Graduación:</label>
+                            <input type="date" class="form-control" id="fecha_graduacion" name="fecha_graduacion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="promedio_aplazos" class="form-label">Promedio con Aplazos:</label>
+                            <input type="number" step="0.01" class="form-control" id="promedio_aplazos" name="promedio_aplazos" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="promedio_sin_aplazos" class="form-label">Promedio sin Aplazos:</label>
+                            <input type="number" step="0.01" class="form-control" id="promedio_sin_aplazos" name="promedio_sin_aplazos" required>
+                        </div>
+
+                        <!-- Si el/la postulante NO está graduado/a -->
+                        <h4 class="mt-4">Si el/la postulante NO está graduado/a:</h4>
+                        <div class="mb-3">
+                            <label for="fecha_estimativa_graduacion" class="form-label">Fecha Estimativa de Graduación:</label>
+                            <input type="date" class="form-control" id="fecha_estimativa_graduacion" name="fecha_estimativa_graduacion">
+                        </div>
+                        <div class="mb-3">
+                            <label for="materias_adeudadas" class="form-label">Cantidad de Materias que Adeuda:</label>
+                            <input type="number" class="form-control" id="materias_adeudadas" name="materias_adeudadas">
+                        </div>
+
+                        <!-- Datos Relativos a la propuesta de postulación -->
+                        <h4 class="mt-4">Datos Relativos a la propuesta de postulación</h4>
+                        <div class="mb-3">
+                            <label for="titulo_investigacion" class="form-label">Título del tema de Investigación propuesto:</label>
+                            <input type="text" class="form-control" id="titulo_investigacion" name="titulo_investigacion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="palabras_clave" class="form-label">Palabras claves del plan (tres palabras claves en mayúsculas):</label>
+                            <input type="text" class="form-control" id="palabras_clave" name="palabras_clave" required>
+                        </div>
+
+                        <!-- Líneas de la convocatoria -->
+                        <h4 class="mt-4">Líneas de la convocatoria</h4>
+                        <div class="mb-3">
+                            <label for="linea_convocatoria" class="form-label">Seleccionar línea:</label>
+                            <select class="form-select" id="linea_convocatoria" name="linea_convocatoria" required>
+                                <option value="">Seleccione una opción</option>
+                                <option value="Centro Propio">Centro Propio</option>
+                                <option value="Línea Priorizada">Línea Priorizada</option>
+                                <option value="Línea Abierta">Línea Abierta</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="centro_propio" style="display: none;">
+                            <label for="centro_propio" class="form-label">Seleccionar Centro Propio:</label>
+                            <select class="form-select" id="centro_propio" name="centro_propio">
+                                <option value="">Seleccione una opción</option>
+                                <option value="CEREN">CEREN</option>
+                                <option value="LAL">LAL</option>
+                                <option value="LINTA">LINTA</option>
+                                <option value="CPP">CPP</option>
+                                <option value="CEMECA">CEMECA</option>
+                                <option value="LEMIT">LEMIT</option>
+                                <option value="CESGI">CESGI</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="linea_priorizada" style="display: none;">
+                            <label for="linea_priorizada" class="form-label">Seleccionar Línea Priorizada:</label>
+                            <select class="form-select" id="linea_priorizada" name="linea_priorizada">
+                                <option value="">Seleccione una opción</option>
+                                <option value="Salud">Salud</option>
+                                <option value="Industria y Producción">Industria y Producción</option>
+                                <option value="Ambiente">Ambiente</option>
+                                <option value="Desarrollo a la comunidad">Desarrollo a la comunidad</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="linea_abierta" style="display: none;">
+                            <label for="linea_abierta" class="form-label">Describir Línea Abierta:</label>
+                            <textarea class="form-control" id="linea_abierta" name="linea_abierta" maxlength="66"></textarea>
+                        </div>
+
+                        <!-- Comisión Asesora Honoraria -->
+                        <div class="mb-3">
+                            <label for="comision_asesora" class="form-label">Comisión Asesora Honoraria:</label>
+                            <select class="form-select" id="comision_asesora" name="comision_asesora" required>
+                                <option value="">Seleccione una opción</option>
+                                <option value="Ciencias Agrícolas, Producción y Salud Animal">Ciencias Agrícolas, Producción y Salud Animal</option>
+                                <option value="Ciencias Biológicas y Salud">Ciencias Biológicas y Salud</option>
+                                <option value="Ciencias Sociales y Humanas">Ciencias Sociales y Humanas</option>
+                                <option value="Física, Matemática, Química, Astronomía">Física, Matemática, Química, Astronomía</option>
+                                <option value="Geología, Minería e Hidrología">Geología, Minería e Hidrología</option>
+                                <option value="Ingeniería, Arquitectura y Tecnología">Ingeniería, Arquitectura y Tecnología</option>
+                                <option value="TIC'S, Electrónica e Informática">TIC'S, Electrónica e Informática</option>
+                                <option value="Ciencias Ambientales y Territorio">Ciencias Ambientales y Territorio</option>
+                            </select>
+                        </div>
+
+                        <!-- Director/a de la Beca -->
+                        <h4 class="mt-4">Director/a de la Beca</h4>
+                        <div class="mb-3">
+                            <label for="director_apellido" class="form-label">Apellido:</label>
+                            <input type="text" class="form-control" id="director_apellido" name="director_apellido" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_nombres" class="form-label">Nombres:</label>
+                            <input type="text" class="form-control" id="director_nombres" name="director_nombres" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_titulo_maximo" class="form-label">Título Máximo:</label>
+                            <input type="text" class="form-control" id="director_titulo_maximo" name="director_titulo_maximo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_lugar_trabajo" class="form-label">Lugar de trabajo y realización de la beca:</label>
+                            <input type="text" class="form-control" id="director_lugar_trabajo" name="director_lugar_trabajo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_cantidad_becarios" class="form-label">Cantidad de Becarios que dirige (máximo 5):</label>
+                            <input type="number" class="form-control" id="director_cantidad_becarios" name="director_cantidad_becarios" min="0" max="5" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_email" class="form-label">Dirección de correo electrónico:</label>
+                            <input type="email" class="form-control" id="director_email" name="director_email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_telefono" class="form-label">T.E. (indicar interno):</label>
+                            <input type="text" class="form-control" id="director_telefono" name="director_telefono" required>
+                        </div>
+
+                        <!-- Cargos del Director/a -->
+                        <h5 class="mt-3">Cargos del Director/a</h5>
+                        <div class="mb-3">
+                            <label for="director_carrera_investigador" class="form-label">¿Pertenece a la Carrera del Investigador CIC o CONICET? Indicar categoría:</label>
+                            <input type="text" class="form-control" id="director_carrera_investigador" name="director_carrera_investigador" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_profesor_adjunto" class="form-label">¿Tiene el cargo de Profesor Adjunto (o superior) y con una dedicación Semi Exclusiva (o superior)? Indicar cargo y dedicación:</label>
+                            <input type="text" class="form-control" id="director_profesor_adjunto" name="director_profesor_adjunto" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_programa_incentivos" class="form-label">¿Tiene la categoría I, II o III en el Programa de Incentivos?:</label>
+                            <input type="text" class="form-control" id="director_programa_incentivos" name="director_programa_incentivos" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="director_categoria_equivalente" class="form-label">¿Posee una categoría equivalente en instituciones del sistema científico-tecnológico con lugar de trabajo en la provincia de Buenos Aires? Indicar cargo de planta que reviste en esa institución:</label>
+                            <input type="text" class="form-control" id="director_categoria_equivalente" name="director_categoria_equivalente" required>
+                        </div>
+
+                        <!-- Co-Director/a de la Beca (No obligatorio) -->
+                        <h4 class="mt-4">Co-Director/a de la Beca (No obligatorio)</h4>
+                        <div class="mb-3">
+                            <label for="codirector_apellido" class="form-label">Apellido:</label>
+                            <input type="text" class="form-control" id="codirector_apellido" name="codirector_apellido">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_nombres" class="form-label">Nombres:</label>
+                            <input type="text" class="form-control" id="codirector_nombres" name="codirector_nombres">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_titulo_maximo" class="form-label">Título Máximo:</label>
+                            <input type="text" class="form-control" id="codirector_titulo_maximo" name="codirector_titulo_maximo">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_lugar_trabajo" class="form-label">Lugar de trabajo y realización de la beca:</label>
+                            <input type="text" class="form-control" id="codirector_lugar_trabajo" name="codirector_lugar_trabajo">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_cantidad_becarios" class="form-label">Cantidad de Becarios que dirige (máximo 5):</label>
+                            <input type="number" class="form-control" id="codirector_cantidad_becarios" name="codirector_cantidad_becarios" min="0" max="5">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_email" class="form-label">Dirección de correo electrónico:</label>
+                            <input type="email" class="form-control" id="codirector_email" name="codirector_email">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_telefono" class="form-label">T.E. (indicar interno):</label>
+                            <input type="text" class="form-control" id="codirector_telefono" name="codirector_telefono">
+                        </div>
+
+                        <!-- Cargos del Co-Director/a -->
+                        <h5 class="mt-3">Cargos del Co-Director/a</h5>
+                        <div class="mb-3">
+                            <label for="codirector_carrera_investigador" class="form-label">¿Pertenece a la Carrera del Investigador CIC o CONICET? Indicar categoría:</label>
+                            <input type="text" class="form-control" id="codirector_carrera_investigador" name="codirector_carrera_investigador">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_profesor_adjunto" class="form-label">¿Tiene el cargo de Profesor Adjunto (o superior) y con una dedicación Semi Exclusiva (o superior)? Indicar cargo y dedicación:</label>
+                            <input type="text" class="form-control" id="codirector_profesor_adjunto" name="codirector_profesor_adjunto">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_programa_incentivos" class="form-label">¿Tiene la categoría I, II o III en el Programa de Incentivos?:</label>
+                            <input type="text" class="form-control" id="codirector_programa_incentivos" name="codirector_programa_incentivos">
+                        </div>
+                        <div class="mb-3">
+                            <label for="codirector_categoria_equivalente" class="form-label">¿Posee una categoría equivalente en instituciones del sistema científico-tecnológico con lugar de trabajo en la provincia de Buenos Aires? Indicar cargo de planta que reviste en esa institución:</label>
+                            <input type="text" class="form-control" id="codirector_categoria_equivalente" name="codirector_categoria_equivalente">
+                        </div>
+
+                        <!-- Lugar propuesto para desarrollar la Beca -->
+                        <h4 class="mt-4">Lugar propuesto para desarrollar la Beca</h4>
+                        <div class="mb-3">
+                            <label for="lugar_centro" class="form-label">Centro:</label>
+                            <input type="text" class="form-control" id="lugar_centro" name="lugar_centro">
+                        </div>
+                        <div class="mb-3">
+                            <label for="lugar_universidad" class="form-label">Universidad:</label>
+                            <input type="text" class="form-control" id="lugar_universidad" name="lugar_universidad">
+                        </div>
+                        <div class="mb-3">
+                            <label for="lugar_facultad" class="form-label">Facultad:</label>
+                            <input type="text" class="form-control" id="lugar_facultad" name="lugar_facultad">
+                        </div>
+                        <div class="mb-3">
+                            <label for="lugar_departamento" class="form-label">Departamento:</label>
+                            <input type="text" class="form-control" id="lugar_departamento" name="lugar_departamento">
+                        </div>
+                        <div class="mb-3">
+                            <label for="lugar_catedra" class="form-label">Cátedra:</label>
+                            <input type="text" class="form-control" id="lugar_catedra" name="lugar_catedra">
+                        </div>
+                        <div class="mb-3">
+                            <label for="lugar_instituto" class="form-label">Instituto:</label>
+                            <input type="text" class="form-control" id="lugar_instituto" name="lugar_instituto">
+                        </div>
+                        <div class="mb-3">
+                            <label for="lugar_otros" class="form-label">Otros:</label>
+                            <input type="text" class="form-control" id="lugar_otros" name="lugar_otros">
+                        </div>
+
+                        <!-- Tipo de asociación con la CIC -->
+                        <div class="mb-3">
+                            <label for="tipo_asociacion" class="form-label">Tipo de asociación con la CIC:</label>
+                            <select class="form-select" id="tipo_asociacion" name="tipo_asociacion" required>
+                                <option value="">Seleccione una opción</option>
+                                <option value="Centro Propio">Centro Propio</option>
+                                <option value="Centro de Asociación Múltiple">Centro de Asociación Múltiple</option>
+                                <option value="Centro de Asociación Simple">Centro de Asociación Simple</option>
+                                <option value="Sin Asociación/otros">Sin Asociación/otros</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="direccion_lugar" class="form-label">Dirección del Lugar: Calle, Nº, Localidad, C.P.:</label>
+                            <input type="text" class="form-control" id="direccion_lugar" name="direccion_lugar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email_lugar" class="form-label">Correo electrónico:</label>
+                            <input type="email" class="form-control" id="email_lugar" name="email_lugar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono_lugar" class="form-label">T.E.:</label>
+                            <input type="text" class="form-control" id="telefono_lugar" name="telefono_lugar" required>
+                        </div>
+
+
+                        <button type="submit" class="btn btn-primary w-100 mt-4">Enviar Formulario</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para mostrar/ocultar campos según la línea de convocatoria -->
+<script>
+    document.getElementById('linea_convocatoria').addEventListener('change', function() {
+        const linea = this.value;
+        document.getElementById('centro_propio').style.display = (linea === 'Centro Propio') ? 'block' : 'none';
+        document.getElementById('linea_priorizada').style.display = (linea === 'Línea Priorizada') ? 'block' : 'none';
+        document.getElementById('linea_abierta').style.display = (linea === 'Línea Abierta') ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

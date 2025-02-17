@@ -1,0 +1,1 @@
+Flask==2.3.3  # (o la versión más reciente si prefieres)
