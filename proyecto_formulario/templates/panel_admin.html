@@ -1,42 +1,137 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
-from extensions import db
-from models import Concurso, FormularioBase
-from decoradores import rol_requerido  # ✅ Decorador para evitar repeticiones
+{% extends "base.html" %}
 
-admin_bp = Blueprint("admin", __name__)
+{% block title %}Panel de Administración{% endblock %}
 
-# ----------------- PANEL DE ADMINISTRACIÓN -----------------
-@admin_bp.route("/panel")
-@login_required
-@rol_requerido("administrador")
-def panel_admin():
-    concursos = Concurso.query.all()
-    formularios = FormularioBase.query.all()
-    return render_template("panel_admin.html", concursos=concursos, formularios=formularios)
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Panel de Administración</h2>
 
-# ----------------- VINCULAR FORMULARIO A CONCURSO -----------------
-@admin_bp.route("/vincular_formulario", methods=["POST"])
-@login_required
-@rol_requerido("administrador")
-def vincular_formulario():
-    concurso_id = request.form.get("concurso_id")
-    formulario_id = request.form.get("formulario_id")
+    <!-- Mostrar mensajes de éxito/error -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-    if not concurso_id or not formulario_id:
-        flash("Debe seleccionar un concurso y un formulario.", "danger")
-        return redirect(url_for("admin.panel_admin"))
+    <div class="row mt-4">
+        
+        <!-- Gestión de Concursos -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Gestión de Concursos</h4>
+                    <a href="{{ url_for('admin.cargar_concurso') }}" class="btn btn-primary w-100 mt-2">Crear y Ver Concursos</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gestión de Formularios -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Gestión de Formularios</h4>
+                    <form method="GET" action="{{ url_for('formulario.gestionar_formularios', concurso_id=concursos[0].id if concursos else '') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <select name="concurso_id" class="form-control mb-2">
+                            {% for concurso in concursos %}
+                                <option value="{{ concurso.id }}">{{ concurso.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary w-100">Definir y editar formularios</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    concurso = Concurso.query.get(concurso_id)
-    formulario = FormularioBase.query.get(formulario_id)
+        <!-- Vinculación de Formularios a Concursos -->
+        <div class="col-md-6 mt-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Vincular Formulario a Concurso</h4>
+                    <form method="POST" action="{{ url_for('admin.vincular_formulario') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <select name="concurso_id" class="form-control mb-2">
+                            {% for concurso in concursos %}
+                                <option value="{{ concurso.id }}">{{ concurso.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-success w-100">Vincular Formulario</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    if not concurso or not formulario:
-        flash("El concurso o el formulario seleccionado no existen.", "danger")
-        return redirect(url_for("admin.panel_admin"))
+        <!-- Ver Postulaciones y Descargar en Excel -->
+        <div class="col-md-6 mt-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Postulaciones</h4>
+                    <form method="GET" action="{{ url_for('admin.ver_postulaciones') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <select name="concurso_id" class="form-control mb-2">
+                            {% for concurso in concursos %}
+                                <option value="{{ concurso.id }}">{{ concurso.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary w-100">Ver Postulaciones</button>
+                    </form>
+                    <form method="GET" action="{{ url_for('admin.descargar_postulaciones', concurso_id=concursos[0].id if concursos else '') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <select name="concurso_id" class="form-control mb-2">
+                            {% for concurso in concursos %}
+                                <option value="{{ concurso.id }}">{{ concurso.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-secondary w-100">Descargar Postulaciones (Excel)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    # Asignar el formulario al concurso
-    concurso.formulario_id = formulario.id
-    db.session.commit()
+        <!-- Registro de Administradores -->
+        <div class="col-md-6 mt-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Registrar Administrador</h4>
+                    <a href="{{ url_for('auth.register_admin') }}" class="btn btn-primary w-100 mt-2">Registrar Nuevo Administrador</a>
+                </div>
+            </div>
+        </div>
 
-    flash("Formulario vinculado correctamente al concurso.", "success")
-    return redirect(url_for("admin.panel_admin"))
+        <!-- Indicadores del Tablero de Gestión -->
+        <div class="col-md-12 mt-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h4>Indicadores del Concurso</h4>
+                    <canvas id="graficoPostulaciones"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Script para mostrar gráficos con Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById("graficoPostulaciones").getContext("2d");
+    var chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: {{ concursos_labels|tojson }},
+            datasets: [{
+                label: "Postulaciones Finalizadas",
+                data: {{ postulaciones_finalizadas|tojson }},
+                backgroundColor: "blue"
+            },
+            {
+                label: "Postulaciones en Borrador",
+                data: {{ postulaciones_borrador|tojson }},
+                backgroundColor: "red"
+            }]
+        }
+    });
+</script>
+{% endblock %}

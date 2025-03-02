@@ -1,0 +1,587 @@
+A continuación te paso para que me audites el código de un sistema que estoy haciendo con chatgpt. Necesito cerrarlo y no puedo. 
+Contexto: Repasando los requerimientos:
+Contexto: la Comision de investigaciones Científicas de la provincia de buenos aires (CIC), entre otras políticas publicas, lanza aperturas para la inscripción de concursos para el otorgamiento de becas, subsidios o para el ingreso a la planta en carreras de investigador o personal de apoyo. Para presentarse a estos, los postulantes realizan las presentaciones adjuntado documentación: Formularios con datos, DDJJ, títulos de estudios, CVs, etc.
+Este sistema tiene como fin soportar la confección de los formularios que contienen datos importantes para procesar y seleccionar las presentaciones durante las etapas del concurso. Actualmente se realiza a través de archivos editables sin ningún tipo de validaciones. Esto implica que la mayoría de la veces hay datos faltantes o no están ingresados de manera correcta. Esto implica un desgaste y un proceso engorroso simplemente para asegurar que estén bien enviados los formularios. También, una vez cerrado el concurso se vuelcan en un Excel todos los datos de las presentaciones, quedando un archivo consolidado para luego ser trabajado por los equipos de administración. Esta propuesta también es para que los datos sean almacenados  cuando el postulante carga los datos, a si las personas que trabajan en la adminsitracion pueden descargar el Excel con todos los datos, ahorrando tiempo y disminuyendo los error involuntarios por el traspaso de datos.
+Hay dos usuarios, el usuario rol postulante (externo) y el usuario rol administrador.
+Usuario postulante:
+Este usuario ingresa a la pagina de la CIC, https://www.cic.gba.gob.ar/cic-convocatorias/, en el cual siempre se cuelgan las novedades y los concursos abiertos. Aquí va a encontrar todas las documentaciones y requisitos necesarios para que pueda hacer la presentación. Parte de la documentación son, en general, dos formularios (datos personales y datos relacionados al lugar de trabajo por ejemplo para las becas). Este usuario va a poder acceder a la confección de formularios, lo cual antes se deberá registrar (el usuario tiene que ser su correo electrónico). Una vez registrado, inicia sesión y visualizara los concursos que están activos para los cuales se puede postular. Selecciona uno y le aparece el formulario I para la carga, una vez finalizada la carga hay un botón que indica seguir con formulario II, y comienza la carga del segundo formulario. Una vez finalizado presiona el botón finalizar. Al presionar finalizar, va a poder generar el formulario en PDF (formato aun a definir pero por ahora como el que esta compartido). Estaría bueno que el formulario tenga algún código de validación. También hay que contemplar que se puedan ir guardando los datos que vaya cargando para que se pueda ir completando en varias instancias antes de que sea finalizado. El usuario también debe poder ver los formularios generados.
+Usuario Rol administrador:
+Este usuario es quien podrá generar los concursos para que se visualicen, editar y definir los formularios, descargar en un Excel la tabla de los postulantes de un determinado concurso.
+Existen 8 tipos básicos de concursos, Concurso para ingreso como investigador (CICINV), para ingreso como personal de apoyo a la investigación (CICPA), para ingreso como becario de entrenamiento (BENTRE), para ingreso como becario doctoral (BEDOC), para subsidios de publicación (PDCT), para subsidio de organización (ORCT), para subsidio de Asistencia (ARCT) y subsidio idea proyecto (IP). En general estos grupos tienen casi la misma estructura de datos, varia según el tipo, y de una convocatoria a otra puede ser que se modifiquen cosas. Es por eso que debemos tener formularios para cada tipo de subsidio, con la posibilidad que el usuario administrador pueda editar los campos a completar.
+
+ Usuario Postulante:
+Inicia secion o se registra si no esta registrado.
+-	Al ingresar vera un panel donde tiene opciones, ver los concursos en los cuales ya genero los formularios para presentar o aquellos que no están finalizados, que están en estado sin finalizar. Y si quiere podrá descargar los formularios en pdf de esas postulaciones. La otra opción es que puede seleccionar a algún concurso activo para confeccionar los formularios de presentacion. Presionando esta opción, se desplega los concursos activos. Pero Para los cuales ya genero un formulario, le saldrá un cartel informando que ya esta el formulario presentado.
+-	En la confecion de formularios, el postulante podera ir cargándolos, guardándolos datos cargados para que lo peda completar en etapas (ya que es muy largo). Para luego ingresar y poder seguir completando hasta generarlo. 
+Usuario Administrador:
+-	Da de alta a otros administradores.
+-	Genera concursos activos
+-	Genera los formularios para cada concurso (ya que estos varían en tipo: BEDOC, BENTRE, CICPA, CICINV, etc; y pueden variar, dentro del mismo tipo algún dato que se pida).
+-	Descargar en un Excel todos un consolidado con todos los datos cargados de un determinado concurso.
+-	También podrá visualizar un tablero con indicadores de seguimiento de concurso, por ejempli, cuantas postulaciones hay, cuantas con formulario finalizado y cuantas sin finalizar, etc.
+
+
+Principales problemas: inconsistencias.
+
+
+Codigos:
+
+----app-py:
+from flask import Flask, render_template, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
+from flask_login import LoginManager, current_user
+from extensions import db
+from models import Usuario
+from rutas_admin import admin_bp
+from rutas_auth import auth_bp
+from rutas_postulante import postulante_bp
+from rutas_formularios import formulario_bp
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///your_database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = 'supersecretkey'
+
+db.init_app(app)
+migrate = Migrate(app, db)
+csrf = CSRFProtect(app)
+
+# Configuración de Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "auth.login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(Usuario, int(user_id))
+
+@app.route("/")
+def index():
+    if current_user.is_authenticated:
+        if current_user.role == "administrador":
+            return redirect(url_for("admin.panel_admin"))
+        return redirect(url_for("postulante.panel_postulante"))
+    return redirect(url_for("auth.login"))
+
+# Registrar los Blueprints
+app.register_blueprint(admin_bp, url_prefix="/admin")
+app.register_blueprint(auth_bp, url_prefix="/auth")
+app.register_blueprint(postulante_bp, url_prefix="/postulante")
+app.register_blueprint(formulario_bp, url_prefix="/formulario")
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+----decoradores.py:
+from functools import wraps
+from flask import flash, redirect, url_for
+from flask_login import current_user
+
+def rol_requerido(rol):
+    def decorator(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            if not current_user.is_authenticated or current_user.role != rol:
+                flash("Acceso denegado.", "danger")
+                return redirect(url_for("auth.login"))
+            return func(*args, **kwargs)
+        return wrapped
+    return decorator
+
+
+----extensions.py:
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+----init_db-py:
+import logging
+
+try:
+    from app import app
+    from extensions import db
+    from models import db, Usuario, Concurso, FormularioBase  
+
+
+    with app.app_context():
+        db.create_all()
+        logging.info("Base de datos y tablas creadas correctamente.")
+
+except Exception as e:
+    logging.error(f"Error: {e}")
+finally:
+    # Cerrar la conexión a la base de datos si es necesario
+    pass
+
+----models.py:
+from extensions import db
+from flask_login import UserMixin
+import json
+
+class Usuario(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    apellidos = db.Column(db.String(50), nullable=False)
+    nombres = db.Column(db.String(50), nullable=False)
+    dni = db.Column(db.String(20), unique=True, nullable=False)
+
+    formularios = db.relationship('FormularioBase', backref='postulante', lazy=True)
+
+class Concurso(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)
+    estado = db.Column(db.String(20), nullable=False, default="cerrado")
+    fecha_inicio = db.Column(db.Date, nullable=False)
+    fecha_fin = db.Column(db.Date, nullable=False)
+    
+    formularios = db.relationship('FormularioBase', backref='concurso', lazy=True)
+
+class CampoFormulario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)
+    obligatorio = db.Column(db.Boolean, nullable=False, default=True)
+    opciones = db.Column(db.Text, nullable=True)
+    concurso_id = db.Column(db.Integer, db.ForeignKey('concurso.id'), nullable=False)
+
+class FormularioBase(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    postulante_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    concurso_id = db.Column(db.Integer, db.ForeignKey('concurso.id'), nullable=False)
+    datos_generales = db.Column(db.Text, nullable=False, default="{}")
+    estado = db.Column(db.String(50), nullable=False, default="borrador")
+
+    def validar_completitud(self):
+        datos = json.loads(self.datos_generales)
+        return all(datos.values())  # Verifica que todos los campos estén llenos
+
+
+
+class RespuestaCampoDinamico(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    formulario_id = db.Column(db.Integer, db.ForeignKey("formulario_base.id"), nullable=False)
+    campo_id = db.Column(db.Integer, db.ForeignKey("campo_formulario.id"), nullable=False)
+    valor = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f"<RespuestaCampoDinamico {self.id} - Formulario {self.formulario_id}>"
+
+
+
+----rutas_admin.py:
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
+from flask_login import login_required
+from extensions import db
+from models import Concurso, FormularioBase
+from decoradores import rol_requerido
+import json
+import csv
+
+admin_bp = Blueprint("admin", __name__)
+
+# ----------------- PANEL DE ADMINISTRACIÓN -----------------
+@admin_bp.route("/panel_admin")
+@login_required
+@rol_requerido("administrador")
+def panel_admin():
+    concursos = Concurso.query.all()
+    formularios = FormularioBase.query.all()
+
+    # Verificar si hay concursos para evitar errores en tojson
+    concursos_labels = [concurso.nombre for concurso in concursos] if concursos else ["Sin datos"]
+    postulaciones_finalizadas = [FormularioBase.query.filter_by(concurso_id=concurso.id, estado="finalizado").count() for concurso in concursos] if concursos else [0]
+    postulaciones_borrador = [FormularioBase.query.filter_by(concurso_id=concurso.id, estado="borrador").count() for concurso in concursos] if concursos else [0]
+
+    return render_template("panel_admin.html",
+                           concursos=concursos,
+                           formularios=formularios,
+                           concursos_labels=concursos_labels,
+                           postulaciones_finalizadas=postulaciones_finalizadas,
+                           postulaciones_borrador=postulaciones_borrador)
+
+# ----------------- CARGAR CONCURSO -----------------
+@admin_bp.route("/cargar_concurso", methods=["GET", "POST"])
+@login_required
+@rol_requerido("administrador")
+def cargar_concurso():
+    TIPOS_CONCURSOS = {
+        "BEDOC": "Becas Doctorales (BEDOC)",
+        "BENTRE": "Becas Entrenamiento (BENTRE)",
+        "CICINV": "Ingreso Carrera Investigador (CICINV)",
+        "CICPA": "Ingreso Carrera Personal de Apoyo (CICPA)",
+        "PDCT": "Subsidios para Publicaciones (PDCT)",
+        "ORCT": "Subsidios para Organización de Reuniones Científicas (ORCT)",
+        "ARCT": "Subsidios para Asistencia a Reuniones Científicas (ARCT)",
+        "IP": "Ideas-Proyectos (IP)"
+    }
+
+    if request.method == "POST":
+        nombre = request.form.get("nombre")
+        tipo = request.form.get("tipo")
+        fecha_inicio = request.form.get("fecha_inicio")
+        fecha_fin = request.form.get("fecha_fin")
+
+        if not nombre or not tipo or not fecha_inicio or not fecha_fin:
+            flash("Todos los campos son obligatorios.", "danger")
+            return redirect(url_for("admin.cargar_concurso"))
+
+        nuevo_concurso = Concurso(
+            nombre=nombre,
+            tipo=tipo,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+            estado="abierto"
+        )
+        db.session.add(nuevo_concurso)
+        db.session.commit()
+
+        flash("Concurso creado correctamente.", "success")
+        return redirect(url_for("admin.cargar_concurso"))
+
+    concursos = Concurso.query.all()
+    return render_template("cargar_concurso.html", tipos_concursos=TIPOS_CONCURSOS, concursos=concursos)
+
+# ----------------- VINCULAR FORMULARIO A CONCURSO -----------------
+@admin_bp.route("/vincular_formulario", methods=["POST"])
+@login_required
+@rol_requerido("administrador")
+def vincular_formulario():
+    concurso_id = request.form.get("concurso_id")
+    formulario_id = request.form.get("formulario_id")
+
+    if not concurso_id or not formulario_id:
+        flash("Debe seleccionar un concurso y un formulario.", "danger")
+        return redirect(url_for("admin.panel_admin"))
+
+    concurso = Concurso.query.get(concurso_id)
+    formulario = FormularioBase.query.get(formulario_id)
+
+    if not concurso or not formulario:
+        flash("El concurso o el formulario seleccionado no existen.", "danger")
+        return redirect(url_for("admin.panel_admin"))
+
+    concurso.formulario_id = formulario.id
+    db.session.commit()
+
+    flash("Formulario vinculado correctamente al concurso.", "success")
+    return redirect(url_for("admin.panel_admin"))
+
+#--------------------------VER POSTULACIONES------------------------------------
+@admin_bp.route("/ver_postulaciones", methods=["GET"])
+@login_required
+@rol_requerido("administrador")
+def ver_postulaciones():
+    concursos = Concurso.query.all()
+    concurso_id = request.args.get("concurso_id")
+
+    postulaciones = FormularioBase.query.filter_by(concurso_id=concurso_id, estado="finalizado").all() if concurso_id else []
+
+    return render_template("ver_postulaciones.html", concursos=concursos, postulaciones=postulaciones)
+
+#------------------------------------DESCARGAR EXCEL--------------------------------------
+@admin_bp.route("/descargar_postulaciones/<int:concurso_id>")
+@login_required
+@rol_requerido("administrador")
+def descargar_postulaciones(concurso_id):
+    concurso = Concurso.query.get_or_404(concurso_id)
+    postulaciones = FormularioBase.query.filter_by(concurso_id=concurso_id, estado="finalizado").all()
+
+    if not postulaciones:
+        flash("No hay postulaciones finalizadas para este concurso.", "warning")
+        return redirect(url_for("admin.panel_admin"))
+
+    csv_filename = f"postulaciones_{concurso.nombre}.csv"
+    csv_data = []
+
+    for postulacion in postulaciones:
+        try:
+            datos = json.loads(postulacion.datos_generales)
+        except (TypeError, ValueError):
+            flash("Error al procesar los datos de las postulaciones.", "danger")
+            return redirect(url_for("admin.panel_admin"))
+
+        datos_serializables = {k: str(v) if v is not None else "" for k, v in datos.items()}
+        csv_data.append(datos_serializables)
+
+    def generate():
+        if csv_data:
+            header = csv_data[0].keys()
+            yield ",".join(header) + "\n"
+            for row in csv_data:
+                yield ",".join(row.get(col, "") for col in header) + "\n"
+        else:
+            yield "No hay datos disponibles.\n"
+
+    response = Response(generate(), mimetype="text/csv")
+    response.headers["Content-Disposition"] = f"attachment; filename={csv_filename}"
+    return response
+
+
+
+----rutas_auth.py:
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required
+from extensions import db
+from models import Usuario
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_wtf.csrf import CSRFProtect
+
+auth_bp = Blueprint("auth", __name__)
+csrf = CSRFProtect()
+
+# ----------------- LOGIN -----------------
+@auth_bp.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        usuario = Usuario.query.filter_by(username=email).first()
+
+        if usuario and check_password_hash(usuario.password, password):
+            login_user(usuario)
+            flash("Inicio de sesión exitoso.", "success")
+            return redirect(url_for("admin.panel_admin") if usuario.role == "administrador" else url_for("postulante.panel_postulante"))
+        else:
+            flash("Correo o contraseña incorrectos.", "danger")
+
+    return render_template("login.html")
+
+# ----------------- CIERRE DE SESIÓN -----------------
+@auth_bp.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Sesión cerrada exitosamente.", "info")
+    return redirect(url_for("auth.login"))
+
+# ----------------- REGISTRO DE POSTULANTE -----------------
+@auth_bp.route("/register_postulante", methods=["GET", "POST"])
+def register_postulante():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        nombres = request.form.get("nombres")
+        apellidos = request.form.get("apellidos")
+        dni = request.form.get("dni")
+
+        if not email or not password or not nombres or not apellidos or not dni:
+            flash("Todos los campos son obligatorios.", "danger")
+            return redirect(url_for("auth.register_postulante"))
+
+        existing_user = Usuario.query.filter_by(username=email).first()
+        if existing_user:
+            flash("El correo ya está registrado.", "warning")
+            return redirect(url_for("auth.register_postulante"))
+
+        nuevo_postulante = Usuario(
+            username=email,
+            password=generate_password_hash(password),
+            role="postulante",
+            nombres=nombres,
+            apellidos=apellidos,
+            dni=dni
+        )
+
+        db.session.add(nuevo_postulante)
+        db.session.commit()
+
+        flash("Registro exitoso. Ahora puedes iniciar sesión.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("register_postulante.html")
+
+# ----------------- REGISTRO DE ADMINISTRADOR (Solo accesible para administradores) -----------------
+@auth_bp.route("/register_admin", methods=["GET", "POST"])
+@login_required
+def register_admin():
+    if not hasattr(request, "current_user") or request.current_user.role != "administrador":
+        flash("Acceso denegado.", "danger")
+        return redirect(url_for("auth.login"))
+
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        nombres = request.form.get("nombres")
+        apellidos = request.form.get("apellidos")
+        dni = request.form.get("dni")
+
+        if not email or not password or not nombres or not apellidos or not dni:
+            flash("Todos los campos son obligatorios.", "danger")
+            return redirect(url_for("auth.register_admin"))
+
+        existing_user = Usuario.query.filter_by(username=email).first()
+        if existing_user:
+            flash("El correo ya está registrado.", "warning")
+            return redirect(url_for("auth.register_admin"))
+
+        nuevo_admin = Usuario(
+            username=email,
+            password=generate_password_hash(password),
+            role="administrador",
+            nombres=nombres,
+            apellidos=apellidos,
+            dni=dni
+        )
+
+        db.session.add(nuevo_admin)
+        db.session.commit()
+
+        flash("Administrador creado con éxito.", "success")
+        return redirect(url_for("admin.panel_admin"))
+
+    return render_template("register_admin.html")
+
+
+
+----rutas_postulante.py:
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask_login import login_required, current_user
+from extensions import db
+from models import Concurso, FormularioBase, CampoFormulario, RespuestaCampoDinamico
+import json
+import pdfkit
+
+postulante_bp = Blueprint("postulante", __name__)
+
+# ----------------- PANEL DEL POSTULANTE -----------------
+@postulante_bp.route("/panel_postulante", methods=["GET"])
+@login_required
+def panel_postulante():
+    if current_user.role != "postulante":
+        flash("Acceso denegado.", "danger")
+        return redirect(url_for("auth.login_unificado"))
+
+    postulaciones_borrador = FormularioBase.query.filter_by(postulante_id=current_user.id, estado="borrador").all()
+    postulaciones_finalizadas = FormularioBase.query.filter_by(postulante_id=current_user.id, estado="finalizado").all()
+    concursos_abiertos = Concurso.query.filter(Concurso.estado == "abierto").all()
+
+    return render_template(
+        "panel_postulante.html",
+        postulaciones_borrador=postulaciones_borrador,
+        postulaciones_finalizadas=postulaciones_finalizadas,
+        concursos_abiertos=concursos_abiertos
+    )
+
+# ----------------- INICIAR POSTULACIÓN -----------------
+@postulante_bp.route("/iniciar_postulacion/<int:concurso_id>", methods=["GET"])
+@login_required
+def iniciar_postulacion(concurso_id):
+    if current_user.role != "postulante":
+        flash("Acceso denegado.", "danger")
+        return redirect(url_for("auth.login_unificado"))
+
+    # Verificar si ya existe un formulario para este concurso
+    formulario = FormularioBase.query.filter_by(postulante_id=current_user.id, concurso_id=concurso_id).first()
+    if not formulario:
+        formulario = FormularioBase(postulante_id=current_user.id, concurso_id=concurso_id, estado="borrador")
+        db.session.add(formulario)
+        db.session.commit()
+
+    return redirect(url_for("postulante.completar_formulario", formulario_id=formulario.id))
+
+# ----------------- COMPLETAR FORMULARIO -----------------
+@postulante_bp.route("/completar_formulario/<int:formulario_id>", methods=["GET", "POST"])
+@login_required
+def completar_formulario(formulario_id):
+    formulario = FormularioBase.query.get_or_404(formulario_id)
+    
+    if current_user.role != "postulante" or formulario.postulante_id != current_user.id:
+        flash("Acceso denegado.", "danger")
+        return redirect(url_for("auth.login_unificado"))
+
+    concurso = Concurso.query.get_or_404(formulario.concurso_id)
+    campos = CampoFormulario.query.filter_by(concurso_id=formulario.concurso_id).all()
+    
+    if request.method == "POST":
+        respuestas = {campo.id: request.form.get(str(campo.id)) for campo in campos}
+        
+        for campo_id, valor in respuestas.items():
+            respuesta = RespuestaCampoDinamico.query.filter_by(formulario_id=formulario.id, campo_id=campo_id).first()
+            if respuesta:
+                respuesta.valor = valor
+            else:
+                nueva_respuesta = RespuestaCampoDinamico(formulario_id=formulario.id, campo_id=campo_id, valor=valor)
+                db.session.add(nueva_respuesta)
+
+        db.session.commit()
+        flash("Formulario guardado correctamente.", "success")
+        return redirect(url_for("postulante.panel_postulante"))
+
+    return render_template("formulario_dinamico.html", formulario=formulario, concurso=concurso, campos=campos)
+
+# ----------------- FINALIZAR FORMULARIO -----------------
+@postulante_bp.route("/finalizar_formulario/<int:formulario_id>", methods=["POST"])
+@login_required
+def finalizar_formulario(formulario_id):
+    formulario = FormularioBase.query.get_or_404(formulario_id)
+
+    if current_user.role != "postulante" or formulario.postulante_id != current_user.id:
+        flash("Acceso denegado.", "danger")
+        return redirect(url_for("auth.login_unificado"))
+
+    formulario.estado = "finalizado"
+    db.session.commit()
+
+    flash("Formulario enviado correctamente.", "success")
+    return redirect(url_for("postulante.panel_postulante"))
+
+# ----------------- GENERAR PDF -----------------
+@postulante_bp.route("/generar_pdf/<int:formulario_id>", methods=["GET"])
+@login_required
+def generar_pdf(formulario_id):
+    formulario = FormularioBase.query.get_or_404(formulario_id)
+
+    if current_user.role != "postulante" or formulario.postulante_id != current_user.id:
+        flash("Acceso denegado.", "danger")
+        return redirect(url_for("auth.login_unificado"))
+
+    concurso = Concurso.query.get_or_404(formulario.concurso_id)
+    respuestas = RespuestaCampoDinamico.query.filter_by(formulario_id=formulario.id).all()
+    
+    datos = {resp.campo.nombre: resp.valor for resp in respuestas}
+    
+    html = render_template("formulario_pdf.html", concurso=concurso, datos=datos)
+    
+    pdf_path = f"postulacion_{formulario_id}.pdf"
+    pdfkit.from_string(html, pdf_path)
+    
+    return redirect(url_for("postulante.panel_postulante"))
+
+# ----------------- VER POSTULACIONES -----------------
+@postulante_bp.route("/ver_postulaciones", methods=["GET"])
+@login_required
+def ver_postulaciones():
+    if current_user.role != "postulante":
+        flash("Acceso denegado.", "danger")
+        return redirect(url_for("auth.login_unificado"))
+
+    postulaciones = FormularioBase.query.filter_by(postulante_id=current_user.id).all()
+    
+    return render_template("ver_postulaciones.html", postulaciones=postulaciones)
+
+
+
+----forms.py:
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, Length
+
+class LoginForm(FlaskForm):
+    email = StringField("Correo Electrónico", validators=[DataRequired(), Email()])
+    password = PasswordField("Contraseña", validators=[DataRequired()])
+    submit = SubmitField("Iniciar Sesión")
+
+class RegistroForm(FlaskForm):
+    email = StringField("Correo Electrónico", validators=[DataRequired(), Email()])
+    nombres = StringField("Nombres", validators=[DataRequired(), Length(min=2, max=50)])
+    apellidos = StringField("Apellidos", validators=[DataRequired(), Length(min=2, max=50)])
+    password = PasswordField("Contraseña", validators=[DataRequired(), Length(min=8)])
+    confirm_password = PasswordField("Confirmar Contraseña", validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField("Registrarse")

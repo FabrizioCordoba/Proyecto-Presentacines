@@ -3,9 +3,6 @@ from flask import flash, redirect, url_for
 from flask_login import current_user
 
 def rol_requerido(rol):
-    """
-    Decorador para verificar el rol del usuario antes de ejecutar una función.
-    """
     def decorator(func):
         @wraps(func)
         def wrapped(*args, **kwargs):

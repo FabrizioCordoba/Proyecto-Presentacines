@@ -4,72 +4,39 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-body">
-                    <h2 class="card-title text-center">Formulario de Postulación</h2>
-                    <p class="text-center"><strong>Concurso:</strong> {{ concurso.nombre }}</p>
+    <h2 class="text-center">Formulario de Postulación</h2>
+    <p class="text-center"><strong>Concurso:</strong> {{ concurso.nombre }}</p>
 
-                    {% if campos %}
-                        <form method="POST" class="mt-3" id="postulacion-form">
-                            {% for campo in campos %}
-                                <div class="mb-3">
-                                    <label for="{{ campo.nombre }}" class="form-label">
-                                        {{ campo.nombre }} {% if campo.obligatorio %}<span class="text-danger">*</span>{% endif %}
-                                    </label>
+    {% if campos %}
+        <form method="POST" class="mt-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                                    {% if campo.tipo == "text" %}
-                                        <input type="text" class="form-control required-field" name="{{ campo.nombre }}" required="{{ campo.obligatorio }}">
-                                    
-                                    {% elif campo.tipo == "number" %}
-                                        <input type="number" class="form-control required-field" name="{{ campo.nombre }}" required="{{ campo.obligatorio }}">
-                                    
-                                    {% elif campo.tipo == "date" %}
-                                        <input type="date" class="form-control required-field" name="{{ campo.nombre }}" required="{{ campo.obligatorio }}">
-                                    
-                                    {% elif campo.tipo == "select" %}
-                                        <select class="form-control required-field" name="{{ campo.nombre }}" required="{{ campo.obligatorio }}">
-                                            {% for opcion in campo.opciones.split(",") %}
-                                                <option value="{{ opcion }}">{{ opcion }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    {% endif %}
-                                </div>
+            {% for campo in campos %}
+                <div class="mb-3">
+                    <label for="{{ campo.nombre }}" class="form-label">
+                        {{ campo.nombre }} {% if campo.obligatorio %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+
+                    {% if campo.tipo == "text" %}
+                        <input type="text" class="form-control" name="{{ campo.nombre }}" required>
+                    {% elif campo.tipo == "number" %}
+                        <input type="number" class="form-control" name="{{ campo.nombre }}" required>
+                    {% elif campo.tipo == "date" %}
+                        <input type="date" class="form-control" name="{{ campo.nombre }}" required>
+                    {% elif campo.tipo == "select" %}
+                        <select class="form-control" name="{{ campo.nombre }}" required>
+                            {% for opcion in campo.opciones.split(",") %}
+                                <option value="{{ opcion }}">{{ opcion }}</option>
                             {% endfor %}
-
-                            <button type="submit" class="btn btn-success w-100">Guardar Borrador</button>
-                            <button type="submit" name="finalizar" value="true" class="btn btn-primary w-100 mt-2" onclick="return confirmarEnvio()">Finalizar y Enviar</button>
-                        </form>
-                    {% else %}
-                        <p class="text-center text-muted">No hay campos definidos para este formulario.</p>
+                        </select>
                     {% endif %}
                 </div>
-            </div>
-        </div>
-    </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary w-100">Guardar y Enviar</button>
+        </form>
+    {% else %}
+        <p class="text-center text-muted">No hay campos definidos para este formulario.</p>
+    {% endif %}
 </div>
-
-<script>
-    function confirmarEnvio() {
-        let campos = document.querySelectorAll(".required-field");
-        let incompletos = false;
-
-        campos.forEach(campo => {
-            if (campo.value.trim() === "") {
-                campo.classList.add("border-danger");
-                incompletos = true;
-            } else {
-                campo.classList.remove("border-danger");
-            }
-        });
-
-        if (incompletos) {
-            alert("Por favor, completa todos los campos obligatorios antes de enviar.");
-            return false;
-        }
-
-        return confirm("¿Estás seguro de que deseas enviar el formulario? Una vez enviado, no podrás editarlo.");
-    }
-</script>
 {% endblock %}

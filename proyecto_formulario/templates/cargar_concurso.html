@@ -8,6 +8,8 @@
 
     <!-- Formulario para crear un nuevo concurso -->
     <form method="POST" action="{{ url_for('admin.cargar_concurso') }}" class="mt-4">
+        {{ csrf_token() }}  <!-- ✅ Se agrega el token CSRF -->
+        
         <div class="form-group">
             <label>Nombre del Concurso:</label>
             <input type="text" name="nombre" class="form-control" required>
@@ -47,7 +49,7 @@
             {% for concurso in concursos %}
             <tr>
                 <td>{{ concurso.nombre }}</td>
-                <td>{{ tipos_concursos.get(concurso.tipo, concurso.tipo) }}</td>  <!-- Muestra el nombre completo -->
+                <td>{{ tipos_concursos.get(concurso.tipo, concurso.tipo) }}</td> 
                 <td>{{ concurso.fecha_inicio }}</td>
                 <td>{{ concurso.fecha_fin }}</td>
                 <td>{{ concurso.estado }}</td>

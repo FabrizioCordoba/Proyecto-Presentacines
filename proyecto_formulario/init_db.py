@@ -3,7 +3,8 @@ import logging
 try:
     from app import app
     from extensions import db
-    from models import Usuario, Concurso, FormularioDatosGenerales, FormularioPlanTrabajo
+    from models import db, Usuario, Concurso, FormularioBase  
+
 
     with app.app_context():
         db.create_all()

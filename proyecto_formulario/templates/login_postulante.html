@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Iniciar Sesión - Postulante{% endblock %}
+{% block title %}Iniciar Sesión{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
@@ -8,8 +8,10 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h2 class="card-title text-center">Iniciar Sesión como Postulante</h2>
+                    <h2 class="card-title text-center">Iniciar Sesión</h2>
                     <form method="POST" class="mt-3">
+                        {{ csrf_token() }}  <!-- Protección CSRF -->
+                        
                         <div class="mb-3">
                             <label for="username" class="form-label">Correo Electrónico:</label>
                             <input type="email" class="form-control" id="username" name="username" required>
@@ -18,9 +20,20 @@
                             <label for="password" class="form-label">Contraseña:</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+
+                        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
                     </form>
-                    <p class="mt-3 text-center">¿No tienes una cuenta? <a href="{{ url_for('auth.register_postulante') }}">Regístrate aquí</a>.</p>
+
+                    <hr>
+                    <div class="text-center mt-3">
+                        <p>¿No tienes una cuenta?</p>
+                        <a href="{{ url_for('auth.register_postulante') }}" class="btn btn-success w-100 mb-2">Registrarse como Postulante</a>
+                        <a href="{{ url_for('auth.register_admin') }}" class="btn btn-warning w-100">Registrar Administrador</a>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver a Inicio</a>
+                    </div>
                 </div>
             </div>
         </div>

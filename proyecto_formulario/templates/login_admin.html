@@ -1,25 +1,50 @@
 {% extends "base.html" %}
 
-{% block title %}Iniciar Sesión - Administrador{% endblock %}
+{% block title %}Inicio de Sesión - Administrador{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card">
+            <div class="card border-primary shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">Acceso Administrador</h3>
+                </div>
                 <div class="card-body">
-                    <h2 class="card-title text-center">Iniciar Sesión como Administrador</h2>
-                    <form method="POST" class="mt-3">
+                    
+                    <!-- Mostrar mensajes de error -->
+                    {% with messages = get_flashed_messages(with_categories=True) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Formulario de login para Administradores -->
+                    <form method="POST" action="{{ url_for('auth.login_admin') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">  <!-- ✅ Token CSRF Correcto -->
+
                         <div class="mb-3">
-                            <label for="username" class="form-label">Correo Electrónico:</label>
+                            <label for="username" class="form-label">Correo Electrónico</label>
                             <input type="email" class="form-control" id="username" name="username" required>
                         </div>
+
                         <div class="mb-3">
-                            <label for="password" class="form-label">Contraseña:</label>
+                            <label for="password" class="form-label">Contraseña</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+
+                        <button type="submit" class="btn btn-primary w-100">Ingresar</button>
                     </form>
+
+                    <hr>
+
+                    <p class="text-center mt-3">
+                        ¿Eres postulante? 
+                        <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Iniciar sesión aquí</a>
+                    </p>
+
                 </div>
             </div>
         </div>
